@@ -1,0 +1,1 @@
+# ros_rabbitmq_bridge
