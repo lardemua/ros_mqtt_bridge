@@ -26,7 +26,7 @@ def on_message(mosq, obj, msg, topic_data, args):
     msg_ros = message_converter.convert_dictionary_to_ros_message(topic_data[msg.topic]['type'], msg_json)
 
     if args['set_stamp_on_received']:
-        if msg.topic in '/tf':
+        if msg.topic in ['/tf', '/tf_static']:
 
             for transform in msg_ros.transforms:
                 transform.header.stamp = rospy.Time.now()
