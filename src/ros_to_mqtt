@@ -2,19 +2,19 @@
 import json
 import rospy
 from rospy_message_converter import message_converter
-from tf.msg import tfMessage
 import yaml
 import rostopic
 from functools import partial
-import paho.mqtt.publish as publish
+import paho.mqtt.client as mqtt
 import argparse
 from colorama import Fore, Style
 
 # Set ip address here
 host = "localhost"
+port = 1883
 
 
-def callback(msg_ros, topic, args):
+def callback(msg_ros, topic, args, mqtt_client):
 
     if args['verbose']:
         print("Received " + Fore.RED + "ROS" + Style.RESET_ALL + " message on topic " + topic)
@@ -26,7 +26,8 @@ def callback(msg_ros, topic, args):
     # print('msg in json=\n' + str(json.dumps(msg_json, indent=2, sort_keys=True)))
 
     # publish a single message
-    publish.single(topic=topic, payload=json.dumps(msg_json), hostname=host)
+    mqtt_client.publish(topic=topic, payload=json.dumps(msg_json))
+    # publish.single(topic=topic, payload=json.dumps(msg_json), hostname=host)
 
 
 def main():
@@ -41,6 +42,15 @@ def main():
     with open('topics.yml') as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
 
+    # Different versions of mosquito use different formats
+    try:
+        client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1)
+    except:
+        client = mqtt.Client()
+
+    # client.tls_set('root.ca', certfile='c1.crt', keyfile='c1.key')
+    client.connect("127.0.0.1", 1883, 60)
+
     for topic in config['topics']:
         # Get the topic type based on the topic name
         topic_class, _, _ = rostopic.get_topic_class(topic)
@@ -53,7 +63,7 @@ def main():
         _ = rospy.wait_for_message(topic, topic_class)
         print('received!')
 
-        rospy.Subscriber(topic, topic_class, partial(callback, topic=topic, args=args))
+        rospy.Subscriber(topic, topic_class, partial(callback, topic=topic, args=args, mqtt_client=client))
 
     print('Publishing ROS messages to mqtt ...')
     rospy.spin()

@@ -1,17 +1,11 @@
 #!/usr/bin/env python3
 import paho.mqtt.client as mqtt
 import json
-from rospy_message_converter import message_converter
-import argparse
-import rospy
-import json
 import rospy
 from rospy_message_converter import message_converter
-from tf.msg import tfMessage
 import yaml
 import rostopic
 from functools import partial
-import paho.mqtt.publish as publish
 import argparse
 from colorama import Fore, Style
 
@@ -52,7 +46,11 @@ if __name__ == '__main__':
     with open('topics.yml') as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
 
-    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1)
+    # Different versions of mosquito use different formats
+    try:
+        client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1)
+    except:
+        client = mqtt.Client()
 
     # client.tls_set('root.ca', certfile='c1.crt', keyfile='c1.key')
     client.connect("127.0.0.1", 1883, 60)
