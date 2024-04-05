@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+import paho.mqtt.client as mqtt
+import json
+from rospy_message_converter import message_converter
+import argparse
+import rospy
+import json
+import rospy
+from rospy_message_converter import message_converter
+from tf.msg import tfMessage
+import yaml
+import rostopic
+from functools import partial
+import paho.mqtt.publish as publish
+import argparse
+from colorama import Fore, Style
+
+
+def on_message(mosq, obj, msg, topic_data, args):
+
+    if args['verbose']:
+        print("Received " + Fore.BLUE + "MQTT" + Style.RESET_ALL + " message on topic " + msg.topic)
+    mosq.publish('pong', 'ack', 0)
+
+    msg_json = json.loads(str(msg.payload.decode("utf-8", "ignore")))
+    msg_ros = message_converter.convert_dictionary_to_ros_message(topic_data[msg.topic]['type'], msg_json)
+
+    if args['set_stamp_on_received']:
+        if msg.topic in '/tf':
+
+            for transform in msg_ros.transforms:
+                transform.header.stamp = rospy.Time.now()
+
+        else:
+            msg_ros.header.stamp = rospy.Time.now()
+
+    topic_data[msg.topic]['publisher'].publish(msg_ros)
+
+
+if __name__ == '__main__':
+
+    ap = argparse.ArgumentParser()  # Parse command line arguments
+    ap.add_argument("-v", "--verbose", help="Prints the stdout_data of each command to the terminal.",
+                    action='store_true', default=False)
+    ap.add_argument("-ssor", "--set_stamp_on_received", help="Sets the ros message type stamps at the time of the received event of the mqtt message.",
+                    action='store_true', default=False)
+
+    args = vars(ap.parse_args())
+
+    rospy.init_node('mqtt_to_ros', anonymous=False)
+
+    with open('topics.yml') as f:
+        config = yaml.load(f, Loader=yaml.FullLoader)
+
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1)
+
+    # client.tls_set('root.ca', certfile='c1.crt', keyfile='c1.key')
+    client.connect("127.0.0.1", 1883, 60)
+
+    topic_data = {}  # a dict with key as topic names and values as the publishers for each topic
+    for topic in config['topics']:
+        # Get the topic type based on the topic name
+        topic_class, _, _ = rostopic.get_topic_class(topic, blocking=True)
+        topic_type, _, _ = rostopic.get_topic_type(topic, blocking=True)
+        if topic_type is None:
+            raise ValueError('Unknown topic type for topic ' + topic + '. Are you sure this topic is being published?')
+        print('Topic ' + topic + ' has class ' + str(topic_class) + ' and type ' + str(topic_type))
+
+        # setup the ros publisher
+        topic_data[topic] = {'publisher': rospy.Publisher(topic + '_converted', topic_class, queue_size=10),
+                             'type': topic_type}
+
+        # setup the mqtt subscriber
+        print('Subscribing to mqtt topic ' + topic)
+        client.subscribe(topic, 0)
+
+    client.on_message = partial(on_message, topic_data=topic_data, args=args)
+
+    while client.loop() == 0:
+        if rospy.is_shutdown():
+            exit(0)

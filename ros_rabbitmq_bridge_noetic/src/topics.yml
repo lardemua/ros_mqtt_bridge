@@ -1,0 +1,5 @@
+topics:
+  - /tf
+  - /tf_static
+  - /joint_states
+  - /rgb_world/camera_info
