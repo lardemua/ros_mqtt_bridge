@@ -50,7 +50,7 @@ def main():
         client = mqtt.Client()
 
     # client.tls_set('root.ca', certfile='c1.crt', keyfile='c1.key')
-    client.connect(args['ipaddress'], 1883, 60)
+    client.connect(args['ipaddress'], 8080, 60)
 
     def on_disconnect(client, userdata, rc):
         print("mqtt client: on_disconnect called")
