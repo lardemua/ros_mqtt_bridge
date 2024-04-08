@@ -35,6 +35,7 @@ def main():
     ap = argparse.ArgumentParser()  # Parse command line arguments
     ap.add_argument("-v", "--verbose", help="Prints the stdout_data of each command to the terminal.",
                     action='store_true', default=False)
+    ap.add_argument("-ip", "--ipaddress", help="", default="127.0.0.1")
     args = vars(ap.parse_args())
 
     rospy.init_node('ros_to_mqtt', anonymous=False)
@@ -49,7 +50,7 @@ def main():
         client = mqtt.Client()
 
     # client.tls_set('root.ca', certfile='c1.crt', keyfile='c1.key')
-    client.connect("127.0.0.1", 1883, 60)
+    client.connect(args['ipaddress'], 1883, 60)
 
     for topic in config['topics']:
         # Get the topic type based on the topic name

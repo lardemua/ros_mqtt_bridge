@@ -36,6 +36,8 @@ if __name__ == '__main__':
     ap = argparse.ArgumentParser()  # Parse command line arguments
     ap.add_argument("-v", "--verbose", help="Prints the stdout_data of each command to the terminal.",
                     action='store_true', default=False)
+    ap.add_argument("-ip", "--ipaddress", help="", default="127.0.0.1")
+
     ap.add_argument("-ssor", "--set_stamp_on_received", help="Sets the ros message type stamps at the time of the received event of the mqtt message.",
                     action='store_true', default=False)
 
@@ -53,7 +55,7 @@ if __name__ == '__main__':
         client = mqtt.Client()
 
     # client.tls_set('root.ca', certfile='c1.crt', keyfile='c1.key')
-    client.connect("127.0.0.1", 1883, 60)
+    client.connect(args['ipaddress'], 1883, 60)
 
     topic_data = {}  # a dict with key as topic names and values as the publishers for each topic
     for topic in config['topics']:
@@ -65,7 +67,7 @@ if __name__ == '__main__':
         print('Topic ' + topic + ' has class ' + str(topic_class) + ' and type ' + str(topic_type))
 
         # setup the ros publisher
-        topic_data[topic] = {'publisher': rospy.Publisher(topic + '_converted', topic_class, queue_size=10),
+        topic_data[topic] = {'publisher': rospy.Publisher(topic, topic_class, queue_size=10),
                              'type': topic_type}
 
         # setup the mqtt subscriber
