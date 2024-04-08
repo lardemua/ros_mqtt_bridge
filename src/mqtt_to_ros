@@ -55,7 +55,8 @@ if __name__ == '__main__':
         client = mqtt.Client()
 
     # client.tls_set('root.ca', certfile='c1.crt', keyfile='c1.key')
-    client.connect(args['ipaddress'], 1883, 60)
+    result = client.connect(args['ipaddress'], 1883, 60)
+    print('Connection result = ' + str(result))
 
     topic_data = {}  # a dict with key as topic names and values as the publishers for each topic
     for topic in config['topics']:
