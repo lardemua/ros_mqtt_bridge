@@ -58,6 +58,11 @@ if __name__ == '__main__':
     result = client.connect(args['ipaddress'], 1883, 60)
     print('Connection result = ' + str(result))
 
+    def on_disconnect(client, userdata, rc):
+        print("mqtt client: on_disconnect called")
+
+    client.on_disconnect = on_disconnect
+
     topic_data = {}  # a dict with key as topic names and values as the publishers for each topic
     for topic in config['topics']:
         # Get the topic type based on the topic name

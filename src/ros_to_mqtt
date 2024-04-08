@@ -52,6 +52,11 @@ def main():
     # client.tls_set('root.ca', certfile='c1.crt', keyfile='c1.key')
     client.connect(args['ipaddress'], 1883, 60)
 
+    def on_disconnect(client, userdata, rc):
+        print("mqtt client: on_disconnect called")
+
+    client.on_disconnect = on_disconnect
+
     for topic in config['topics']:
         # Get the topic type based on the topic name
         topic_class, _, _ = rostopic.get_topic_class(topic)
