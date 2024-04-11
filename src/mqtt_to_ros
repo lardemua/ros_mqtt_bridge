@@ -66,18 +66,25 @@ if __name__ == '__main__':
 
     topic_data = {}  # a dict with key as topic names and values as the publishers for each topic
     for topic in config['topics']:
-        # Get the topic type based on the topic name
-        print('here ...')
-        topic_class, _, _ = rostopic.get_topic_class(topic, blocking=True)
-        print('here 2...')
-        topic_type, _, _ = rostopic.get_topic_type(topic, blocking=True)
-        print('done here ...')
-        if topic_type is None:
-            raise ValueError('Unknown topic type for topic ' + topic + '. Are you sure this topic is being published?')
-        print('Topic ' + topic + ' has class ' + str(topic_class) + ' and type ' + str(topic_type))
+
+        topic = topic_data['topic']
+        topic_type = topic_data['type']
+        topic_class = topic_data['class']
+
+        # Get the module and the function from the class name
+        # For example, for this class
+        #    tf2_msgs.msg._TFMessage.TFMessage
+        # we need to extract the module name
+        #    tf2_msgs.msg._TFMessage
+        # and also the function name
+        #    TFMessage
+        lst = topic_class.split('.')
+        first_part = '.'.join(lst[:-1])
+        last_part = lst[-1]
+        module = importlib.import_module(first_part)
 
         # setup the ros publisher
-        topic_data[topic] = {'publisher': rospy.Publisher(topic, topic_class, queue_size=10),
+        topic_data[topic] = {'publisher': rospy.Publisher(topic, module.__getattribute__(last_part), queue_size=10),
                              'type': topic_type}
 
         # setup the mqtt subscriber

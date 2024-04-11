@@ -1,5 +1,17 @@
-topics:
-  - /tf
-  - /tf_static
-  - /joint_states
-  - /rgb_world/camera_info
+data:
+  tf:
+    topic: /tf
+    type: tf2_msgs/TFMessage
+    class: tf2_msgs.msg._TFMessage.TFMessage
+  tf_static:
+    topic: /tf_static
+    type: tf2_msgs/TFMessage
+    class: tf2_msgs.msg._TFMessage.TFMessage
+  joint_states:
+    topic: /joint_states
+    type: sensor_msgs/JointState
+    class: sensor_msgs.msg._JointState.JointState
+  rgb_world/camera_info:
+    topic: /rgb_world/camera_info
+    type: sensor_msgs/CameraInfo
+    class: sensor_msgs.msg._CameraInfo.CameraInfo

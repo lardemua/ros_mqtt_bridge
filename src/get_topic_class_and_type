@@ -1,0 +1,43 @@
+#!/usr/bin/env python3
+import json
+import rospy
+import yaml
+import rostopic
+from functools import partial
+import paho.mqtt.client as mqtt
+import argparse
+from colorama import Fore, Style
+
+
+def main():
+
+    ap = argparse.ArgumentParser()  # Parse command line arguments
+    ap.add_argument("-v", "--verbose", help="Prints the stdout_data of each command to the terminal.",
+                    action='store_true', default=False)
+    ap.add_argument("-t", "--topic", help="", default="/tf")
+    args = vars(ap.parse_args())
+
+    rospy.init_node('get_topic_class_and_type', anonymous=False)
+
+    with open('topics.yml') as f:
+        config = yaml.load(f, Loader=yaml.FullLoader)
+
+    for _, topic_data in config['data'].items():
+
+        topic = topic_data['topic']
+
+        # Get the topic type based on the topic name
+        topic_class, _, _ = rostopic.get_topic_class(topic, blocking=True)
+        if topic_class is None:
+            raise ValueError('Unknown topic type for topic ' + topic + '. Are you sure this topic is being published?')
+        print('Topic ' + topic + ' has class ' + str(topic_class))
+        print(type(topic_class))
+
+        topic_type, _, _ = rostopic.get_topic_type(topic, blocking=True)
+        print('Topic ' + topic + ' has type ' + str(topic_type))
+
+        print('\n')
+
+
+if __name__ == '__main__':
+    main()

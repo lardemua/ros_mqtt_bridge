@@ -8,6 +8,7 @@ from functools import partial
 import paho.mqtt.client as mqtt
 import argparse
 from colorama import Fore, Style
+import importlib
 
 # Set ip address here
 host = "localhost"
@@ -58,19 +59,38 @@ def main():
 
     client.on_disconnect = on_disconnect
 
-    for topic in config['topics']:
-        # Get the topic type based on the topic name
-        topic_class, _, _ = rostopic.get_topic_class(topic)
-        if topic_class is None:
-            raise ValueError('Unknown topic type for topic ' + topic + '. Are you sure this topic is being published?')
-        print('Topic ' + topic + ' has class ' + str(topic_class))
+    for _, topic_data in config['data'].items():
+
+        topic = topic_data['topic']
+        topic_class = topic_data['class']
 
         # Wait for first message
         print("Waiting for first message on topic " + topic + ' ... ', end='')
-        _ = rospy.wait_for_message(topic, topic_class)
+
+        # Get the module and the function from the class name
+        # For example, for this class
+        #    tf2_msgs.msg._TFMessage.TFMessage
+        # we need to extract the module name
+        #    tf2_msgs.msg._TFMessage
+        # and also the function name
+        #    TFMessage
+
+        lst = topic_class.split('.')
+        first_part = '.'.join(lst[:-1])
+        last_part = lst[-1]
+
+        # print(lst)
+        # print(first_part)
+        # print(last_part)
+
+        # module_name = topic_class
+        module = importlib.import_module(first_part)
+
+        _ = rospy.wait_for_message(topic, module.__getattribute__(last_part))
         print('received!')
 
-        rospy.Subscriber(topic, topic_class, partial(callback, topic=topic, args=args, mqtt_client=client))
+        rospy.Subscriber(topic, module.__getattribute__(last_part), partial(
+            callback, topic=topic, args=args, mqtt_client=client))
 
     print('Publishing ROS messages to mqtt ...')
     rospy.spin()
