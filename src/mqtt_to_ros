@@ -55,7 +55,7 @@ if __name__ == '__main__':
         client = mqtt.Client()
 
     # client.tls_set('root.ca', certfile='c1.crt', keyfile='c1.key')
-    result = client.connect(args['ipaddress'], 8080, 60)
+    result = client.connect(args['ipaddress'], 1883, 60)
     # result = client.connect("192.168.187.124", 1883, 60)
     print('Connection result = ' + str(result))
 
