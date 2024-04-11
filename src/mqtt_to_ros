@@ -8,6 +8,7 @@ import rostopic
 from functools import partial
 import argparse
 from colorama import Fore, Style
+import roslib
 
 
 def on_message(mosq, obj, msg, topic_data, args):
