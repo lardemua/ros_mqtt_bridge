@@ -59,10 +59,10 @@ def main():
 
     client.on_disconnect = on_disconnect
 
-    for _, topic_data in config['data'].items():
+    for _, config_item in config['data'].items():
 
-        topic = topic_data['topic']
-        topic_class = topic_data['class']
+        topic = config_item['topic']
+        topic_class = config_item['class']
 
         # Wait for first message
         print("Waiting for first message on topic " + topic + ' ... ', end='')
