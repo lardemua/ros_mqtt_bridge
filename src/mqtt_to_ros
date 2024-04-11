@@ -67,8 +67,11 @@ if __name__ == '__main__':
     topic_data = {}  # a dict with key as topic names and values as the publishers for each topic
     for topic in config['topics']:
         # Get the topic type based on the topic name
+        print('here ...')
         topic_class, _, _ = rostopic.get_topic_class(topic, blocking=True)
+        print('here 2...')
         topic_type, _, _ = rostopic.get_topic_type(topic, blocking=True)
+        print('done here ...')
         if topic_type is None:
             raise ValueError('Unknown topic type for topic ' + topic + '. Are you sure this topic is being published?')
         print('Topic ' + topic + ' has class ' + str(topic_class) + ' and type ' + str(topic_type))
@@ -83,6 +86,7 @@ if __name__ == '__main__':
 
     client.on_message = partial(on_message, topic_data=topic_data, args=args)
 
+    print('Waiting for mqtt messages ...')
     while client.loop() == 0:
         if rospy.is_shutdown():
             exit(0)
