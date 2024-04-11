@@ -15,3 +15,8 @@ data:
     topic: /rgb_world/camera_info
     type: sensor_msgs/CameraInfo
     class: sensor_msgs.msg._CameraInfo.CameraInfo
+  ros_out:
+    topic: /rosout
+    type: rosgraph_msgs/Log
+    class: rosgraph_msgs.msg._Log.Log
+
